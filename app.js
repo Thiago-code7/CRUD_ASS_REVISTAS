@@ -11,7 +11,11 @@ const app = express();
 app.use(express.json());
 
 app.use('/assinaturas', assinaturaRotas);
+
 app.use('/auth', autenticacaoRotas);
+app.use('/usuarios', usuarioRotas);
+
+
 
 syncDB();
 

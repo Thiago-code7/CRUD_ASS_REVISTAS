@@ -33,6 +33,11 @@ module.exports = {
     if (!assinatura) return res.status(404).json({ erro: 'Não encontrada' });
 
     await assinatura.destroy();
-    res.status(204).send();
+    res.status(200).json({ mensagem: 'Assinatura excluída com sucesso!' });
+  },
+
+  async deletarTodas(req, res) {
+    await Assinatura.destroy({ where: {} });
+    res.status(200).json({ mensagem: 'Todas as assinaturas foram excluídas com sucesso!' });
   }
 };

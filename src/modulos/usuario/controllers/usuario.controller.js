@@ -1,6 +1,29 @@
+const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/usuario.model');
-const bcrypt = require('bcrypt');
+
+async function criarUsuario(req, res) {
+  const { email, senha } = req.body;
+
+  if (!email || !senha) {
+    return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+  }
+
+  try {
+    const senhaHash = await bcryptjs.hash(senha, 10);
+    const novoUsuario = await Usuario.create({
+      email,
+      senha: senhaHash,
+    });
+
+    return res.status(201).json({
+      mensagem: 'Usuário criado com sucesso',
+      usuario: { email: novoUsuario.email },
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro ao criar usuário' });
+  }
+}
 
 async function login(req, res) {
   const { email, senha } = req.body;
@@ -13,13 +36,12 @@ async function login(req, res) {
     const usuario = await Usuario.findOne({ where: { email } });
 
     if (!usuario) {
-      return res.status(401).json({ error: 'Usuário ou senha inválidos' });
+      return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
-    const senhaValida = await bcrypt.compare(senha, usuario.senha);
-
-    if (!senhaValida) {
-      return res.status(401).json({ error: 'Usuário ou senha inválidos' });
+    const senhaCorreta = await bcryptjs.compare(senha, usuario.senha);
+    if (!senhaCorreta) {
+      return res.status(401).json({ error: 'Senha incorreta' });
     }
 
     const token = jwt.sign(
@@ -29,10 +51,12 @@ async function login(req, res) {
     );
 
     return res.json({ token });
-
   } catch (error) {
-    return res.status(500).json({ error: 'Erro interno no servidor' });
+    return res.status(500).json({ error: 'Erro no login' });
   }
 }
 
-module.exports = { login };
+module.exports = { criarUsuario, login };
+
+
+

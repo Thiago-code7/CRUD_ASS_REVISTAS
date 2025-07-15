@@ -8,6 +8,8 @@ router.get('/:id', auth, controller.buscar);
 router.post('/', auth, controller.criar);
 router.put('/:id', auth, controller.atualizar);
 router.delete('/:id', auth, controller.deletar);
+router.delete('/', auth, controller.deletarTodas);
+
 
 module.exports = router;
 
