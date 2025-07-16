@@ -2,8 +2,9 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/usuario.model');
 
+// Criar um novo usuário
 async function criarUsuario(req, res) {
-  const { email, senha } = req.body;
+  const { email, senha, papel } = req.body;
 
   if (!email || !senha) {
     return res.status(400).json({ error: 'Email e senha são obrigatórios' });
@@ -11,20 +12,27 @@ async function criarUsuario(req, res) {
 
   try {
     const senhaHash = await bcryptjs.hash(senha, 10);
+
     const novoUsuario = await Usuario.create({
       email,
       senha: senhaHash,
+      papel: papel || 'usuario', // define um papel padrão se não enviado
     });
 
     return res.status(201).json({
       mensagem: 'Usuário criado com sucesso',
-      usuario: { email: novoUsuario.email },
+      usuario: {
+        id: novoUsuario.id,
+        email: novoUsuario.email,
+        papel: novoUsuario.papel
+      }
     });
   } catch (error) {
     return res.status(500).json({ error: 'Erro ao criar usuário' });
   }
 }
 
+// Login de usuário
 async function login(req, res) {
   const { email, senha } = req.body;
 
@@ -45,7 +53,11 @@ async function login(req, res) {
     }
 
     const token = jwt.sign(
-      { id: usuario.id, email: usuario.email },
+      {
+        id: usuario.id,
+        email: usuario.email,
+        papel: usuario.papel
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -56,7 +68,21 @@ async function login(req, res) {
   }
 }
 
-module.exports = { criarUsuario, login };
+// Listar todos os usuários (rota protegida)
+async function listarUsuarios(req, res) {
+  try {
+    const usuarios = await Usuario.findAll({
+      attributes: ['id', 'email', 'papel']
+    });
+    return res.json(usuarios);
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro ao listar usuários' });
+  }
+}
 
-
-
+// Exportar os controladores
+module.exports = {
+  criarUsuario,
+  login,
+  listarUsuarios
+};

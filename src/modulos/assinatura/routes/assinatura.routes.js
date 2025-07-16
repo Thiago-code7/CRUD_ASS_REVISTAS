@@ -1,15 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middlewares/auth');
 const controller = require('../controllers/assinatura.controller');
+const autenticar = require('../../../middlewares/autenticacao.middleware');
+const AutorizacaoMiddleware = require('../../../middlewares/autorizacao.middleware');
 
-router.get('/', auth, controller.listar);
-router.get('/:id', auth, controller.buscar);
-router.post('/', auth, controller.criar);
-router.put('/:id', auth, controller.atualizar);
-router.delete('/:id', auth, controller.deletar);
-router.delete('/', auth, controller.deletarTodas);
+// Rotas protegidas
+router.get('/', autenticar, AutorizacaoMiddleware.autorizar(['assinante', 'funcionario', 'admin']), controller.listar);
+router.get('/:id', autenticar, AutorizacaoMiddleware.autorizar(['assinante', 'funcionario', 'admin']), controller.buscar);
 
+router.post('/', autenticar, AutorizacaoMiddleware.autorizar(['funcionario', 'admin']), controller.criar);
+router.put('/:id', autenticar, AutorizacaoMiddleware.autorizar(['funcionario', 'admin']), controller.atualizar);
+router.delete('/:id', autenticar, AutorizacaoMiddleware.autorizar(['funcionario', 'admin']), controller.deletar);
+router.delete('/', autenticar, AutorizacaoMiddleware.autorizar(['funcionario', 'admin']), controller.deletarTodas);
 
 module.exports = router;
+
+
+
 
