@@ -16,7 +16,7 @@ async function criarUsuario(req, res) {
     const novoUsuario = await Usuario.create({
       email,
       senha: senhaHash,
-      papel: papel || 'usuario', // define um papel padrão se não enviado
+      papel: papel || 'usuario', // papel padrão
     });
 
     return res.status(201).json({
@@ -24,8 +24,8 @@ async function criarUsuario(req, res) {
       usuario: {
         id: novoUsuario.id,
         email: novoUsuario.email,
-        papel: novoUsuario.papel
-      }
+        papel: novoUsuario.papel,
+      },
     });
   } catch (error) {
     return res.status(500).json({ error: 'Erro ao criar usuário' });
@@ -56,7 +56,7 @@ async function login(req, res) {
       {
         id: usuario.id,
         email: usuario.email,
-        papel: usuario.papel
+        papel: usuario.papel,
       },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
@@ -72,7 +72,7 @@ async function login(req, res) {
 async function listarUsuarios(req, res) {
   try {
     const usuarios = await Usuario.findAll({
-      attributes: ['id', 'email', 'papel']
+      attributes: ['id', 'email', 'papel'],
     });
     return res.json(usuarios);
   } catch (error) {
@@ -80,9 +80,19 @@ async function listarUsuarios(req, res) {
   }
 }
 
-// Exportar os controladores
+// Retornar dados do usuário logado (perfil)
+async function perfilUsuario(req, res) {
+  try {
+    const { id, email, papel } = req.usuario; // dados do token JWT
+    return res.json({ id, email, papel });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro ao obter perfil do usuário' });
+  }
+}
+
 module.exports = {
   criarUsuario,
   login,
-  listarUsuarios
+  listarUsuarios,
+  perfilUsuario,
 };

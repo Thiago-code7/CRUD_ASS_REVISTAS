@@ -1,23 +1,22 @@
-const jwt = require("jsonwebtoken");
+// src/middlewares/autenticacao.middleware.js
+const jwt = require('jsonwebtoken');
 
-class AutenticacaoMiddleware {
-  static autenticarToken(req, res, next) {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1]; // formato "Bearer TOKEN"
+function autenticarToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-    if (!token) {
-      return res.status(401).json({ msg: "Token de acesso não fornecido!" });
+  if (!token) {
+    return res.status(401).json({ msg: 'Token de acesso não fornecido!' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
+    if (err) {
+      return res.status(403).json({ msg: 'Token inválido ou expirado!' });
     }
 
-    jwt.verify(token, process.env.SECRET_KEY, (err, usuario) => {
-      if (err) {
-        return res.status(403).json({ msg: "Token de acesso não fornecido!" });
-      }
-
-      req.usuario = usuario; 
-      next();
-    });
-  }
+    req.usuario = usuario;
+    next();
+  });
 }
 
-module.exports = AutenticacaoMiddleware;
+module.exports = { autenticarToken };

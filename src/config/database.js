@@ -9,7 +9,8 @@ let sequelize;
 if (dialect === 'sqlite') {
   sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: path.join(__dirname, '../../database.sqlite'),
+    storage: process.env.DB_STORAGE || path.join(__dirname, '../../database.sqlite'),
+    logging: false, // desativa logs SQL, pode ativar se quiser
   });
 } else if (dialect === 'postgres') {
   sequelize = new Sequelize(
@@ -20,9 +21,14 @@ if (dialect === 'sqlite') {
       host: process.env.DB_HOST,
       port: process.env.DB_PORT,
       dialect: 'postgres',
+      logging: false, // desativa logs SQL
+      dialectOptions: {
+        ssl: process.env.DB_SSL === 'true', // configurar SSL se precisar
+      },
     }
   );
+} else {
+  throw new Error(`Dialect não suportado: ${dialect}`);
 }
 
 module.exports = sequelize;
-

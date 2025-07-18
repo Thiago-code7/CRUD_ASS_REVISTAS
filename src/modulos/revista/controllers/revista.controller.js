@@ -28,9 +28,11 @@ const criarRevista = async (req, res) => {
     const novaRevista = await Revista.create({ nome, descricao, categoria, status });
     return res.status(201).json(novaRevista);
   } catch (error) {
+    console.error('Erro ao criar revista:', error); // Adicione isto!
     return res.status(400).json({ erro: 'Erro ao criar revista.' });
   }
 };
+
 
 const atualizarRevista = async (req, res) => {
   const { id } = req.params;
@@ -46,20 +48,15 @@ const atualizarRevista = async (req, res) => {
     return res.status(400).json({ erro: 'Erro ao atualizar revista.' });
   }
 };
-
 const excluirRevista = async (req, res) => {
-  const { id } = req.params;
   try {
-    const revista = await Revista.findByPk(id);
-    if (!revista) {
-      return res.status(404).json({ erro: 'Revista não encontrada.' });
-    }
-    await revista.destroy();
-    return res.status(204).send();
+    await Revista.destroy({ where: {}, truncate: true });
+    return res.status(200).json({ msg: 'Todas as revistas foram excluídas.' });
   } catch (error) {
-    return res.status(500).json({ erro: 'Erro ao excluir revista.' });
+    return res.status(500).json({ erro: 'Erro ao excluir revistas.' });
   }
 };
+
 
 module.exports = {
   listarRevistas,
